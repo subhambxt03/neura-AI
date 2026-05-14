@@ -78,12 +78,7 @@ ai_service = AIService()
 
 @app.get("/")
 async def root():
-    return {
-        "message": "NEURA CHAT API is running", 
-        "status": "healthy",
-        "version": "1.0.0",
-        "environment": os.getenv("ENVIRONMENT", "production")
-    }
+    return {"message": "NEURA CHAT API is running"}
 
 @app.get("/health")
 async def health_check():
@@ -608,6 +603,6 @@ if __name__ == "__main__":
         "main:app", 
         host="0.0.0.0", 
         port=port, 
-        reload=False,  # Set to False in production
+        reload=False,
         workers=int(os.getenv("WORKERS", 1))
     )
