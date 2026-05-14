@@ -13,7 +13,9 @@ DB_USER = os.getenv("DB_USER")
 DB_PASSWORD = quote_plus(os.getenv("DB_PASSWORD", ""))
 DB_NAME = os.getenv("DB_NAME")
 
-DATABASE_URL_WITH_DB = f"mysql+aiomysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}?ssl=false"
+DATABASE_URL_WITH_DB = (
+    f"mysql+asyncmy://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+)
 
 engine = None
 AsyncSessionLocal = None
@@ -30,10 +32,7 @@ async def get_engine():
             pool_size=5,
             max_overflow=10,
             pool_pre_ping=True,
-            pool_recycle=3600,
-            connect_args={
-                "connect_timeout": 30,
-            }
+            pool_recycle=3600
         )
 
         AsyncSessionLocal = async_sessionmaker(
@@ -48,9 +47,8 @@ async def get_engine():
 
 
 async def get_db():
-    """Dependency for getting database session"""
     await get_engine()
-    
+
     async with AsyncSessionLocal() as session:
         try:
             yield session
@@ -63,11 +61,9 @@ async def get_db():
 
 
 async def init_db():
-    """Initialize database tables"""
     await get_engine()
-    
+
     async with engine.begin() as conn:
-        # Users table
         await conn.execute(text("""
             CREATE TABLE IF NOT EXISTS users (
                 id INT PRIMARY KEY AUTO_INCREMENT,
@@ -80,7 +76,6 @@ async def init_db():
             )
         """))
 
-        # Conversations table
         await conn.execute(text("""
             CREATE TABLE IF NOT EXISTS conversations (
                 id INT PRIMARY KEY AUTO_INCREMENT,
@@ -94,7 +89,6 @@ async def init_db():
             )
         """))
 
-        # Messages table
         await conn.execute(text("""
             CREATE TABLE IF NOT EXISTS messages (
                 id INT PRIMARY KEY AUTO_INCREMENT,
@@ -108,7 +102,6 @@ async def init_db():
             )
         """))
 
-        # User sessions table
         await conn.execute(text("""
             CREATE TABLE IF NOT EXISTS user_sessions (
                 id INT PRIMARY KEY AUTO_INCREMENT,
@@ -121,7 +114,6 @@ async def init_db():
             )
         """))
 
-        # Feedback table
         await conn.execute(text("""
             CREATE TABLE IF NOT EXISTS feedback (
                 id INT PRIMARY KEY AUTO_INCREMENT,
@@ -133,21 +125,24 @@ async def init_db():
             )
         """))
 
-        # Optional fulltext indexes
         try:
-            await conn.execute(text("ALTER TABLE conversations ADD FULLTEXT INDEX ft_title (title)"))
+            await conn.execute(text(
+                "ALTER TABLE conversations ADD FULLTEXT INDEX ft_title (title)"
+            ))
         except Exception:
             pass
 
         try:
-            await conn.execute(text("ALTER TABLE messages ADD FULLTEXT INDEX ft_content (content)"))
+            await conn.execute(text(
+                "ALTER TABLE messages ADD FULLTEXT INDEX ft_content (content)"
+            ))
         except Exception:
             pass
 
 
 async def close_db():
-    """Close database connections"""
     global engine
+
     if engine:
         await engine.dispose()
         print("Database engine disposed")
