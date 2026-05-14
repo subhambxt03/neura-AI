@@ -16,16 +16,14 @@ const Signup = ({ setIsAuthenticated }) => {
   const [loading, setLoading] = useState(false)
   const [toast, setToast] = useState(null)
 
-  // Enable scrolling on mount
+  // Ensure body can scroll
   useEffect(() => {
-    // Enable scroll on body
     document.body.style.overflow = 'auto'
-    document.body.style.height = 'auto'
+    document.body.style.height = '100%'
     document.documentElement.style.overflow = 'auto'
-    document.documentElement.style.height = 'auto'
+    document.documentElement.style.height = '100%'
     
     return () => {
-      // Cleanup
       document.body.style.overflow = ''
       document.body.style.height = ''
       document.documentElement.style.overflow = ''
@@ -70,9 +68,9 @@ const Signup = ({ setIsAuthenticated }) => {
   }
 
   return (
-    <div className="relative min-h-screen w-full bg-dark-bg overflow-y-auto overflow-x-hidden">
-      {/* Mobile back button - fixed position */}
-      <div className="fixed top-4 left-4 z-50 md:hidden">
+    <div className="fixed inset-0 bg-dark-bg overflow-y-auto overflow-x-hidden">
+      {/* Mobile back button */}
+      <div className="sticky top-4 left-4 z-50 md:hidden">
         <button
           onClick={() => navigate('/login')}
           className="text-text-secondary hover:text-text-primary transition-colors bg-dark-bg/80 backdrop-blur-sm p-2 rounded-full shadow-lg"
@@ -81,9 +79,9 @@ const Signup = ({ setIsAuthenticated }) => {
         </button>
       </div>
 
-      {/* Scrollable content container */}
-      <div className="w-full min-h-screen flex items-start justify-center py-8 px-4 sm:py-12 md:py-16">
-        <div className="bg-sidebar-bg rounded-2xl p-6 sm:p-8 w-full max-w-md my-8 sm:my-0 shadow-xl">
+      {/* Scrollable content - centered on desktop, scrollable on mobile */}
+      <div className="min-h-full w-full flex flex-col items-center justify-center py-8 px-4 sm:py-12 md:py-16">
+        <div className="bg-sidebar-bg rounded-2xl p-6 sm:p-8 w-full max-w-md">
           <div className="text-center mb-6 sm:mb-8">
             <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-r from-accent to-blue-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
               <span className="text-2xl sm:text-3xl font-bold text-white">NC</span>
@@ -105,7 +103,7 @@ const Signup = ({ setIsAuthenticated }) => {
                   value={formData.name}
                   onChange={handleChange}
                   className="w-full bg-input-bg border border-border-color rounded-lg pl-10 pr-4 py-2.5 sm:py-2 text-text-primary focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-all text-sm sm:text-base"
-                  placeholder="John Doe"
+                  placeholder="Enter your full name"
                   required
                 />
               </div>
@@ -113,7 +111,7 @@ const Signup = ({ setIsAuthenticated }) => {
             
             <div>
               <label className="block text-text-secondary text-sm sm:text-base mb-2">
-                Email <span className="text-accent">*</span>
+                Email Address <span className="text-accent">*</span>
               </label>
               <div className="relative">
                 <FiMail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-text-secondary text-sm sm:text-base" />
@@ -123,7 +121,7 @@ const Signup = ({ setIsAuthenticated }) => {
                   value={formData.email}
                   onChange={handleChange}
                   className="w-full bg-input-bg border border-border-color rounded-lg pl-10 pr-4 py-2.5 sm:py-2 text-text-primary focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-all text-sm sm:text-base"
-                  placeholder="john@example.com"
+                  placeholder="Enter your email"
                   required
                 />
               </div>
@@ -141,7 +139,7 @@ const Signup = ({ setIsAuthenticated }) => {
                   value={formData.phone}
                   onChange={handleChange}
                   className="w-full bg-input-bg border border-border-color rounded-lg pl-10 pr-4 py-2.5 sm:py-2 text-text-primary focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-all text-sm sm:text-base"
-                  placeholder="+1234567890"
+                  placeholder="Enter your phone number"
                   required
                 />
               </div>
@@ -159,7 +157,7 @@ const Signup = ({ setIsAuthenticated }) => {
                   value={formData.password}
                   onChange={handleChange}
                   className="w-full bg-input-bg border border-border-color rounded-lg pl-10 pr-4 py-2.5 sm:py-2 text-text-primary focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-all text-sm sm:text-base"
-                  placeholder="••••••"
+                  placeholder="Create a password (min 6 characters)"
                   required
                   minLength={6}
                 />
@@ -179,7 +177,7 @@ const Signup = ({ setIsAuthenticated }) => {
                   value={formData.confirmPassword}
                   onChange={handleChange}
                   className="w-full bg-input-bg border border-border-color rounded-lg pl-10 pr-4 py-2.5 sm:py-2 text-text-primary focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-all text-sm sm:text-base"
-                  placeholder="••••••"
+                  placeholder="Confirm your password"
                   required
                 />
               </div>
@@ -188,7 +186,7 @@ const Signup = ({ setIsAuthenticated }) => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-gradient-to-r from-accent to-blue-600 text-white py-3 sm:py-2.5 rounded-lg hover:opacity-90 transition-all duration-200 flex items-center justify-center gap-2 font-medium shadow-lg hover:shadow-xl active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100"
+              className="w-full bg-gradient-to-r from-accent to-blue-600 text-white py-3 sm:py-2.5 rounded-lg hover:opacity-90 transition-all duration-200 flex items-center justify-center gap-2 font-medium shadow-lg hover:shadow-xl active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100 mt-6"
             >
               {loading ? (
                 <>
