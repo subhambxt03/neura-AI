@@ -4,6 +4,7 @@ from sqlalchemy import text
 import os
 from dotenv import load_dotenv
 from urllib.parse import quote_plus
+import ssl
 
 load_dotenv()
 
@@ -13,11 +14,9 @@ DB_USER = os.getenv("DB_USER")
 DB_PASSWORD = quote_plus(os.getenv("DB_PASSWORD", ""))
 DB_NAME = os.getenv("DB_NAME")
 
-# Use Aiven MySQL (your existing configuration)
-DATABASE_URL_WITH_DB = f"mysql+aiomysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
-
-# For Render, we'll also check if they provide a DATABASE_URL
-RENDER_DATABASE_URL = os.getenv("RENDER_DATABASE_URL")  # If Render provides PostgreSQL
+# Create database URL without SSL for now (fixes the SSL error)
+# For production with SSL, we'll use a different approach
+DATABASE_URL_WITH_DB = f"mysql+aiomysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}?ssl=false"
 
 engine = None
 AsyncSessionLocal = None
@@ -28,18 +27,17 @@ async def get_engine():
     global engine, AsyncSessionLocal
 
     if engine is None:
-        # Use Aiven MySQL configuration
         engine = create_async_engine(
             DATABASE_URL_WITH_DB,
-            echo=False,  # Set to False in production
-            pool_size=10,  # Connection pool size
-            max_overflow=20,  # Extra connections beyond pool_size
+            echo=False,  # Set to False for production
+            pool_size=5,  # Smaller pool for free tier
+            max_overflow=10,
             pool_pre_ping=True,  # Verify connections before using
             pool_recycle=3600,  # Recycle connections every hour
             pool_timeout=30,  # Timeout for getting connection from pool
             connect_args={
-                "ssl": {"check_hostname": False},  # Required for Aiven
-                "connect_timeout": 10,  # Connection timeout
+                "connect_timeout": 30,  # Connection timeout
+                "autocommit": False,
             }
         )
 
@@ -74,7 +72,7 @@ async def init_db():
     await get_engine()
     
     async with engine.begin() as conn:
-        # Your existing table creation code
+        # Create users table
         await conn.execute(text("""
             CREATE TABLE IF NOT EXISTS users (
                 id INT PRIMARY KEY AUTO_INCREMENT,
@@ -87,6 +85,7 @@ async def init_db():
             )
         """))
 
+        # Create conversations table
         await conn.execute(text("""
             CREATE TABLE IF NOT EXISTS conversations (
                 id INT PRIMARY KEY AUTO_INCREMENT,
@@ -100,6 +99,7 @@ async def init_db():
             )
         """))
 
+        # Create messages table
         await conn.execute(text("""
             CREATE TABLE IF NOT EXISTS messages (
                 id INT PRIMARY KEY AUTO_INCREMENT,
@@ -113,6 +113,7 @@ async def init_db():
             )
         """))
 
+        # Create user_sessions table
         await conn.execute(text("""
             CREATE TABLE IF NOT EXISTS user_sessions (
                 id INT PRIMARY KEY AUTO_INCREMENT,
@@ -125,6 +126,7 @@ async def init_db():
             )
         """))
 
+        # Create feedback table
         await conn.execute(text("""
             CREATE TABLE IF NOT EXISTS feedback (
                 id INT PRIMARY KEY AUTO_INCREMENT,
@@ -136,7 +138,7 @@ async def init_db():
             )
         """))
 
-        # Optional: Add fulltext indexes (ignore errors if they exist)
+        # Optional: Add fulltext indexes (ignore errors if they already exist)
         try:
             await conn.execute(text(
                 "ALTER TABLE conversations ADD FULLTEXT INDEX ft_title (title)"
@@ -157,5 +159,4 @@ async def close_db():
     global engine
     if engine:
         await engine.dispose()
-        
-    
+        print("Database engine disposed")
