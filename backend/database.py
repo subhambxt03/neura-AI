@@ -13,7 +13,6 @@ DB_USER = os.getenv("DB_USER")
 DB_PASSWORD = quote_plus(os.getenv("DB_PASSWORD", ""))
 DB_NAME = os.getenv("DB_NAME")
 
-# Use aiomysql with SSL disabled (fixes the SSL handshake error)
 DATABASE_URL_WITH_DB = f"mysql+aiomysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}?ssl=false"
 
 engine = None

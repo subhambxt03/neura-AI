@@ -4,7 +4,6 @@ python-jose[cryptography]==3.3.0
 passlib[argon2]==1.7.4
 python-multipart==0.0.6
 sqlalchemy==2.0.23
-aiomysql==0.2.0  # Back to aiomysql
 pymysql==1.1.0
 groq==0.4.2
 pypdf2==3.0.1
