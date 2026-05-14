@@ -16,11 +16,20 @@ const Signup = ({ setIsAuthenticated }) => {
   const [loading, setLoading] = useState(false)
   const [toast, setToast] = useState(null)
 
-  // Prevent body scroll when modal/toast is open
+  // Enable scrolling on mount
   useEffect(() => {
+    // Enable scroll on body
     document.body.style.overflow = 'auto'
+    document.body.style.height = 'auto'
+    document.documentElement.style.overflow = 'auto'
+    document.documentElement.style.height = 'auto'
+    
     return () => {
-      document.body.style.overflow = 'auto'
+      // Cleanup
+      document.body.style.overflow = ''
+      document.body.style.height = ''
+      document.documentElement.style.overflow = ''
+      document.documentElement.style.height = ''
     }
   }, [])
 
@@ -61,18 +70,20 @@ const Signup = ({ setIsAuthenticated }) => {
   }
 
   return (
-    <div className="min-h-screen w-full bg-dark-bg overflow-y-auto overflow-x-hidden">
-      {/* Mobile back button */}
-      <button
-        onClick={() => navigate('/login')}
-        className="fixed top-4 left-4 z-50 md:hidden text-text-secondary hover:text-text-primary transition-colors bg-dark-bg/80 backdrop-blur-sm p-2 rounded-full shadow-lg"
-      >
-        <FiArrowLeft size={24} />
-      </button>
+    <div className="relative min-h-screen w-full bg-dark-bg overflow-y-auto overflow-x-hidden">
+      {/* Mobile back button - fixed position */}
+      <div className="fixed top-4 left-4 z-50 md:hidden">
+        <button
+          onClick={() => navigate('/login')}
+          className="text-text-secondary hover:text-text-primary transition-colors bg-dark-bg/80 backdrop-blur-sm p-2 rounded-full shadow-lg"
+        >
+          <FiArrowLeft size={24} />
+        </button>
+      </div>
 
-      {/* Main container with scroll */}
-      <div className="min-h-screen w-full flex items-center justify-center py-8 px-4 sm:py-12 md:py-16">
-        <div className="bg-sidebar-bg rounded-2xl p-6 sm:p-8 w-full max-w-md mx-auto shadow-xl">
+      {/* Scrollable content container */}
+      <div className="w-full min-h-screen flex items-start justify-center py-8 px-4 sm:py-12 md:py-16">
+        <div className="bg-sidebar-bg rounded-2xl p-6 sm:p-8 w-full max-w-md my-8 sm:my-0 shadow-xl">
           <div className="text-center mb-6 sm:mb-8">
             <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-r from-accent to-blue-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
               <span className="text-2xl sm:text-3xl font-bold text-white">NC</span>
