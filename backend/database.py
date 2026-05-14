@@ -4,58 +4,43 @@ from sqlalchemy import text
 import os
 from dotenv import load_dotenv
 from urllib.parse import quote_plus
-import ssl
 
 load_dotenv()
 
 DB_HOST = os.getenv("DB_HOST")
 DB_PORT = os.getenv("DB_PORT", "3306")
 DB_USER = os.getenv("DB_USER")
+# Use quote_plus to handle special characters in password
 DB_PASSWORD = quote_plus(os.getenv("DB_PASSWORD", ""))
 DB_NAME = os.getenv("DB_NAME")
 
-# Create database URL without SSL for now (fixes the SSL error)
-# For production with SSL, we'll use a different approach
-DATABASE_URL_WITH_DB = f"mysql+aiomysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}?ssl=false"
+# Use asyncmy driver (compatible with aiomysql syntax)
+DATABASE_URL = f"mysql+asyncmy://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}?ssl=true"
 
 engine = None
 AsyncSessionLocal = None
 Base = declarative_base()
 
-
 async def get_engine():
     global engine, AsyncSessionLocal
-
     if engine is None:
+        # Create engine with SSL enabled and connection pooling
         engine = create_async_engine(
-            DATABASE_URL_WITH_DB,
-            echo=False,  # Set to False for production
-            pool_size=5,  # Smaller pool for free tier
+            DATABASE_URL,
+            echo=False,
+            pool_size=5,
             max_overflow=10,
-            pool_pre_ping=True,  # Verify connections before using
-            pool_recycle=3600,  # Recycle connections every hour
-            pool_timeout=30,  # Timeout for getting connection from pool
-            connect_args={
-                "connect_timeout": 30,  # Connection timeout
-                "autocommit": False,
-            }
+            pool_pre_ping=True,
+            pool_recycle=3600,
         )
-
         AsyncSessionLocal = async_sessionmaker(
-            bind=engine,
-            class_=AsyncSession,
-            expire_on_commit=False,
-            autocommit=False,
-            autoflush=False
+            engine, class_=AsyncSession, expire_on_commit=False
         )
-
     return engine
 
-
 async def get_db():
-    """Dependency for getting database session"""
+    """Dependency to get DB session."""
     await get_engine()
-    
     async with AsyncSessionLocal() as session:
         try:
             yield session
@@ -66,13 +51,11 @@ async def get_db():
         finally:
             await session.close()
 
-
 async def init_db():
-    """Initialize database tables"""
+    """Initialize database tables (same schema as before)."""
     await get_engine()
-    
     async with engine.begin() as conn:
-        # Create users table
+        # Users table
         await conn.execute(text("""
             CREATE TABLE IF NOT EXISTS users (
                 id INT PRIMARY KEY AUTO_INCREMENT,
@@ -84,8 +67,7 @@ async def init_db():
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         """))
-
-        # Create conversations table
+        # Conversations table
         await conn.execute(text("""
             CREATE TABLE IF NOT EXISTS conversations (
                 id INT PRIMARY KEY AUTO_INCREMENT,
@@ -98,8 +80,7 @@ async def init_db():
                 INDEX idx_created_at (created_at)
             )
         """))
-
-        # Create messages table
+        # Messages table
         await conn.execute(text("""
             CREATE TABLE IF NOT EXISTS messages (
                 id INT PRIMARY KEY AUTO_INCREMENT,
@@ -112,8 +93,7 @@ async def init_db():
                 INDEX idx_created_at (created_at)
             )
         """))
-
-        # Create user_sessions table
+        # User sessions table
         await conn.execute(text("""
             CREATE TABLE IF NOT EXISTS user_sessions (
                 id INT PRIMARY KEY AUTO_INCREMENT,
@@ -125,8 +105,7 @@ async def init_db():
                 INDEX idx_token (token)
             )
         """))
-
-        # Create feedback table
+        # Feedback table
         await conn.execute(text("""
             CREATE TABLE IF NOT EXISTS feedback (
                 id INT PRIMARY KEY AUTO_INCREMENT,
@@ -138,25 +117,18 @@ async def init_db():
             )
         """))
 
-        # Optional: Add fulltext indexes (ignore errors if they already exist)
+        # Optional fulltext indexes (ignore errors)
         try:
-            await conn.execute(text(
-                "ALTER TABLE conversations ADD FULLTEXT INDEX ft_title (title)"
-            ))
+            await conn.execute(text("ALTER TABLE conversations ADD FULLTEXT INDEX ft_title (title)"))
         except Exception:
             pass
-
         try:
-            await conn.execute(text(
-                "ALTER TABLE messages ADD FULLTEXT INDEX ft_content (content)"
-            ))
+            await conn.execute(text("ALTER TABLE messages ADD FULLTEXT INDEX ft_content (content)"))
         except Exception:
             pass
-
 
 async def close_db():
-    """Close database connections (for graceful shutdown)"""
+    """Close database engine."""
     global engine
     if engine:
         await engine.dispose()
-        print("Database engine disposed")
