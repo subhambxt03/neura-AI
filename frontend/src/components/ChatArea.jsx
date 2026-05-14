@@ -4,7 +4,9 @@ import MessageBubble from './MessageBubble'
 import MessageInput from './MessageInput'
 import api from '../services/api'
 import Toast from './Toast'
-import logoImage from '../assets/logo.png' // Add this import
+import logoImage from '../assets/logo.png'
+
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 
 const ChatArea = ({ selectedConversation, setSelectedConversation, sidebarOpen, setSidebarOpen }) => {
   const [messages, setMessages] = useState([])
@@ -46,7 +48,6 @@ const ChatArea = ({ selectedConversation, setSelectedConversation, sidebarOpen, 
     } else {
       setMessages([])
     }
-    // Reset auto-scroll when conversation changes
     setShouldAutoScroll(true)
   }, [selectedConversation])
 
@@ -62,7 +63,6 @@ const ChatArea = ({ selectedConversation, setSelectedConversation, sidebarOpen, 
   const sendMessage = async (message, fileContent = null) => {
     if (!message.trim() && !fileContent) return
     
-    // Add user message to UI immediately
     const userMessage = {
       id: Date.now(),
       role: 'user',
@@ -82,7 +82,7 @@ const ChatArea = ({ selectedConversation, setSelectedConversation, sidebarOpen, 
     abortControllerRef.current = new AbortController()
     
     try {
-      const response = await fetch('http://localhost:8000/chat/send', {
+      const response = await fetch(`${API_BASE_URL}/chat/send`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -112,11 +112,9 @@ const ChatArea = ({ selectedConversation, setSelectedConversation, sidebarOpen, 
             try {
               const data = JSON.parse(line.slice(6))
               if (data.done) {
-                // Stream completed
                 setIsStreaming(false)
                 setStreamingContent('')
                 
-                // Add AI message to messages list
                 const aiMessage = {
                   id: data.message_id,
                   role: 'assistant',
@@ -125,7 +123,6 @@ const ChatArea = ({ selectedConversation, setSelectedConversation, sidebarOpen, 
                 }
                 setMessages(prev => [...prev, aiMessage])
                 
-                // Update conversation list if this is a new conversation
                 if (data.conversation_id && !selectedConversation) {
                   const convResponse = await api.get(`/chat/conversations`)
                   const newConv = convResponse.data.find(c => c.id === data.conversation_id)
@@ -147,7 +144,6 @@ const ChatArea = ({ selectedConversation, setSelectedConversation, sidebarOpen, 
       if (error.name !== 'AbortError') {
         console.error('Stream error:', error)
         setToast({ type: 'error', message: 'Failed to send message. Please try again.' })
-        // Remove the user message if failed
         setMessages(prev => prev.filter(m => m.id !== userMessage.id))
       }
     } finally {
@@ -161,10 +157,10 @@ const ChatArea = ({ selectedConversation, setSelectedConversation, sidebarOpen, 
     setLoading(true)
     setIsStreaming(true)
     setStreamingContent('')
-    setShouldAutoScroll(true) // Enable auto-scroll when regenerating
+    setShouldAutoScroll(true)
     
     try {
-      const response = await fetch(`http://localhost:8000/chat/regenerate/${messageId}`, {
+      const response = await fetch(`${API_BASE_URL}/chat/regenerate/${messageId}`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -189,7 +185,6 @@ const ChatArea = ({ selectedConversation, setSelectedConversation, sidebarOpen, 
               if (data.done) {
                 setIsStreaming(false)
                 setStreamingContent('')
-                // Reload messages to get the new response
                 await loadMessages()
               } else {
                 fullResponse += data.content
@@ -248,7 +243,6 @@ const ChatArea = ({ selectedConversation, setSelectedConversation, sidebarOpen, 
     return (
       <div className="flex-1 flex items-center justify-center bg-dark-bg">
         <div className="text-center">
-          {/* Updated logo section */}
           <div className="w-24 h-24 mx-auto mb-4 flex items-center justify-center">
             <img 
               src={logoImage} 
@@ -366,7 +360,6 @@ const ChatArea = ({ selectedConversation, setSelectedConversation, sidebarOpen, 
         </div>
       </div>
       
-      {/* Input */}
       <MessageInput onSend={sendMessage} disabled={loading || isStreaming} />
       
       {toast && <Toast {...toast} onClose={() => setToast(null)} />}

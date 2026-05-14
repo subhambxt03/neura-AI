@@ -4,6 +4,7 @@ python-jose[cryptography]==3.3.0
 passlib[argon2]==1.7.4
 python-multipart==0.0.6
 sqlalchemy==2.0.23
+aiomysql==0.2.0
 pymysql==1.1.0
 groq==0.4.2
 pypdf2==3.0.1
@@ -16,6 +17,4 @@ sse-starlette==1.6.5
 argon2-cffi==23.1.0
 email-validator==2.1.0.post1
 cryptography==41.0.7
-asyncmy==0.2.10
-pymysql==1.1.0
-
+bcrypt==4.1.2

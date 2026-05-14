@@ -2,6 +2,7 @@ from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sess
 from sqlalchemy.orm import declarative_base
 from sqlalchemy import text
 import os
+import ssl
 from dotenv import load_dotenv
 from urllib.parse import quote_plus
 
@@ -13,9 +14,13 @@ DB_USER = os.getenv("DB_USER")
 DB_PASSWORD = quote_plus(os.getenv("DB_PASSWORD", ""))
 DB_NAME = os.getenv("DB_NAME")
 
-DATABASE_URL_WITH_DB = (
-    f"mysql+asyncmy://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
-)
+# Create SSL context for Aiven MySQL
+ssl_context = ssl.create_default_context()
+ssl_context.check_hostname = False
+ssl_context.verify_mode = ssl.CERT_NONE
+
+# Use aiomysql driver with SSL context
+DATABASE_URL = f"mysql+aiomysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
 
 engine = None
 AsyncSessionLocal = None
@@ -27,12 +32,18 @@ async def get_engine():
 
     if engine is None:
         engine = create_async_engine(
-            DATABASE_URL_WITH_DB,
-            echo=False,
+            DATABASE_URL,
+            echo=False,  # Set to True for debugging SQL queries
             pool_size=5,
             max_overflow=10,
-            pool_pre_ping=True,
-            pool_recycle=3600
+            pool_pre_ping=True,  # Verify connections before using
+            pool_recycle=3600,  # Recycle connections every hour
+            pool_timeout=30,  # Timeout for getting connection from pool
+            connect_args={
+                "ssl": ssl_context,  # Use SSL context for secure connection
+                "connect_timeout": 30,
+                "autocommit": False,
+            }
         )
 
         AsyncSessionLocal = async_sessionmaker(
@@ -47,8 +58,9 @@ async def get_engine():
 
 
 async def get_db():
+    """Dependency for getting database session"""
     await get_engine()
-
+    
     async with AsyncSessionLocal() as session:
         try:
             yield session
@@ -61,9 +73,11 @@ async def get_db():
 
 
 async def init_db():
+    """Initialize database tables"""
     await get_engine()
-
+    
     async with engine.begin() as conn:
+        # Create users table
         await conn.execute(text("""
             CREATE TABLE IF NOT EXISTS users (
                 id INT PRIMARY KEY AUTO_INCREMENT,
@@ -76,6 +90,7 @@ async def init_db():
             )
         """))
 
+        # Create conversations table
         await conn.execute(text("""
             CREATE TABLE IF NOT EXISTS conversations (
                 id INT PRIMARY KEY AUTO_INCREMENT,
@@ -89,6 +104,7 @@ async def init_db():
             )
         """))
 
+        # Create messages table
         await conn.execute(text("""
             CREATE TABLE IF NOT EXISTS messages (
                 id INT PRIMARY KEY AUTO_INCREMENT,
@@ -102,6 +118,7 @@ async def init_db():
             )
         """))
 
+        # Create user_sessions table
         await conn.execute(text("""
             CREATE TABLE IF NOT EXISTS user_sessions (
                 id INT PRIMARY KEY AUTO_INCREMENT,
@@ -114,6 +131,7 @@ async def init_db():
             )
         """))
 
+        # Create feedback table
         await conn.execute(text("""
             CREATE TABLE IF NOT EXISTS feedback (
                 id INT PRIMARY KEY AUTO_INCREMENT,
@@ -125,24 +143,21 @@ async def init_db():
             )
         """))
 
+        # Add fulltext indexes (ignore errors if they already exist)
         try:
-            await conn.execute(text(
-                "ALTER TABLE conversations ADD FULLTEXT INDEX ft_title (title)"
-            ))
+            await conn.execute(text("ALTER TABLE conversations ADD FULLTEXT INDEX ft_title (title)"))
         except Exception:
             pass
 
         try:
-            await conn.execute(text(
-                "ALTER TABLE messages ADD FULLTEXT INDEX ft_content (content)"
-            ))
+            await conn.execute(text("ALTER TABLE messages ADD FULLTEXT INDEX ft_content (content)"))
         except Exception:
             pass
 
 
 async def close_db():
+    """Close database connections for graceful shutdown"""
     global engine
-
     if engine:
         await engine.dispose()
         print("Database engine disposed")
