@@ -1,6 +1,6 @@
 # 💬 NEURA CHAT - AI-Powered Chat Application
 
-![NEURA CHAT Demo](frontend/src/assets/logo.png)
+![NEURA CHAT Logo](frontend/src/assets/logo.png)
 
 A modern, AI-powered chat application with file upload support, conversation history, and user authentication.
 
@@ -14,95 +14,211 @@ A modern, AI-powered chat application with file upload support, conversation his
 - 📝 **Markdown** - Formatted AI responses
 - 🔄 **Regenerate** - Reroll AI responses
 - ⭐ **Feedback** - Rate responses with thumbs up/down
+- 🔒 **Forgot Password** - OTP-based password recovery
 
 ## 🛠️ Tech Stack
 
-**Frontend:** React, Vite, TailwindCSS, Axios
-**Backend:** Python, FastAPI, SQLAlchemy, MySQL, JWT
-**AI:** Groq API (LLaMA 3.1)
+**Frontend:**
+- React 18
+- Vite
+- TailwindCSS
+- Axios
+- React Router DOM
+
+**Backend:**
+- Python 3.11+
+- FastAPI
+- SQLAlchemy (Async)
+- MySQL (Aiven)
+- JWT Authentication
+
+**AI:**
+- Groq API (LLaMA 3.1)
 
 ## 🚀 Live Demo
 
 - **Frontend:** [https://neura-aii.netlify.app/](https://neura-aii.netlify.app/)
 - **Backend API:** [https://neura-ai-vvfv.onrender.com](https://neura-ai-vvfv.onrender.com)
 
-
 ## 📸 Screenshots
 
 ### Chat Interface
-![Chat Interface](https://your-image-url.com/chat-screenshot.png)
+![Chat Interface](frontend/src/assets/chat.png)
 
 ### Mobile View
-![Mobile View](https://your-image-url.com/mobile-screenshot.png)
+![Mobile View](frontend/src/assets/mobile.png)
 
 ### Login Page
-![Login Page](https://your-image-url.com/login-screenshot.png)
+![Login Page](frontend/src/assets/login.png)
 
 ## 🔧 Quick Start
 
 ### Prerequisites
-- Node.js (v18+)
+
 - Python (v3.11+)
-- MySQL Database
+- MySQL Database (Aiven or local)
 - Groq API Key
 
 ### Backend Setup
+
 ```bash
-cd backend
+# Clone the repository
+git clone https://github.com/subhambxt03/neura-AI.git
+cd neura-AI/backend
+
+# Create virtual environment
 python -m venv venv
-source venv/bin/activate  # Windows: venv\Scripts\activate
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# Install dependencies
 pip install -r requirements.txt
+
+# Copy environment variables
 cp .env.example .env
+
 # Update .env with your credentials
+# Edit DB_HOST, DB_USER, DB_PASSWORD, etc.
+
+# Run the server
 uvicorn main:app --reload --port 8000
 Frontend Setup
 bash
-cd frontend
+# Navigate to frontend directory
+cd ../frontend
+
+# Install dependencies
 npm install
+
+# Copy environment variables
 cp .env.example .env
+
 # Update VITE_API_URL in .env
+# For local development: VITE_API_URL=http://localhost:8000
+
+# Run the development server
 npm run dev
-📡 Key API Endpoints
+📡 API Endpoints
+Authentication
 Method	Endpoint	Description
-POST	/auth/signup	Register user
+POST	/auth/signup	Register new user
 POST	/auth/login	Login user
-GET	/chat/conversations	Get all chats
+POST	/auth/logout	Logout user
+POST	/auth/validate	Validate JWT token
+POST	/auth/forgot-password	Send OTP for password reset
+POST	/auth/verify-otp	Verify OTP
+POST	/auth/reset-password	Reset password with OTP
+User Management
+Method	Endpoint	Description
+GET	/user/profile	Get user profile
+PUT	/user/profile	Update user profile
+PUT	/user/change-password	Change password
+DELETE	/user/account	Delete account
+Chat
+Method	Endpoint	Description
+POST	/chat/new	Create new conversation
+GET	/chat/conversations	Get all conversations
+GET	/chat/messages/{id}	Get conversation messages
 POST	/chat/send	Send message (streaming)
-POST	/file/upload	Upload file
+POST	/chat/regenerate/{id}	Regenerate AI response
+DELETE	/chat/{id}	Delete conversation
+PUT	/chat/{id}/archive	Archive/unarchive conversation
+File & Feedback
+Method	Endpoint	Description
+POST	/file/upload	Upload and process file
+POST	/feedback	Submit feedback for AI response
+GET	/feedback/stats	Get feedback statistics
+
 🌐 Environment Variables
 Backend (.env)
 env
+# Database Configuration
 DB_HOST=localhost
 DB_PORT=3306
 DB_USER=root
 DB_PASSWORD=yourpassword
 DB_NAME=neura_chat
-JWT_SECRET=your-secret-key
-GROQ_API_KEY=your-groq-key
+
+# JWT Configuration
+JWT_SECRET=your-super-secret-jwt-key
+JWT_ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_DAYS=7
+
+# AI Configuration
+GROQ_API_KEY=your-groq-api-key
+
+# CORS Configuration
+CORS_ORIGINS=http://localhost:5173,https://your-frontend.com
+
+# SMTP Configuration (for forgot password)
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=your-email@gmail.com
+SMTP_PASSWORD=your-app-password
 Frontend (.env)
 env
 VITE_API_URL=http://localhost:8000
+
 🚢 Deployment
 Backend (Render)
-Push code to GitHub
+Push your code to GitHub
 
-Create Web Service on Render
+Log in to Render
 
-Add environment variables
+Click "New +" → "Web Service"
 
-Deploy
+Connect your GitHub repository
+
+Configure:
+
+Name: neura-chat-api
+
+Environment: Python
+
+Build Command: pip install -r requirements.txt
+
+Start Command: uvicorn main:app --host 0.0.0.0 --port $PORT
+
+Add all environment variables
+
+Click "Create Web Service"
 
 Frontend (Netlify)
-Push code to GitHub
+Push your code to GitHub
 
-Create site on Netlify
+Log in to Netlify
 
-Build command: npm run build
+Click "Add new site" → "Import an existing project"
 
-Publish directory: dist
+Connect to GitHub and select your repository
 
-Add env: VITE_API_URL=https://your-backend.com
+Configure:
 
+Build Command: npm run build
+
+Publish Directory: dist
+
+Add environment variable:
+
+VITE_API_URL=https://your-backend.onrender.com
+
+Click "Deploy site"
+
+Important: Fix 404 Errors on Netlify
+Create a netlify.toml file in your frontend root:
+
+toml
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+Or create public/_redirects file:
+
+text
+/*    /index.html   200
 📁 Project Structure
 text
 neura-AI/
@@ -110,27 +226,67 @@ neura-AI/
 │   ├── main.py
 │   ├── database.py
 │   ├── models.py
+│   ├── schemas.py
 │   ├── auth.py
 │   ├── ai_service.py
-│   └── requirements.txt
+│   ├── file_processor.py
+│   ├── requirements.txt
+│   └── .env
 ├── frontend/
+│   ├── public/
+│   │   └── _redirects
 │   ├── src/
 │   │   ├── components/
+│   │   │   ├── ChatArea.jsx
+│   │   │   ├── Sidebar.jsx
+│   │   │   ├── MessageBubble.jsx
+│   │   │   ├── MessageInput.jsx
+│   │   │   └── Toast.jsx
 │   │   ├── pages/
+│   │   │   ├── Login.jsx
+│   │   │   ├── Signup.jsx
+│   │   │   ├── ForgotPassword.jsx
+│   │   │   ├── Profile.jsx
+│   │   │   ├── Settings.jsx
+│   │   │   └── Chat.jsx
 │   │   ├── services/
-│   │   └── App.jsx
-│   └── package.json
+│   │   │   ├── api.js
+│   │   │   └── auth.js
+│   │   ├── contexts/
+│   │   │   └── AuthContext.jsx
+│   │   ├── App.jsx
+│   │   └── main.jsx
+│   ├── package.json
+│   ├── vite.config.js
+│   ├── tailwind.config.js
+│   └── .env
 └── README.md
+🤝 Contributing
+Fork the repository
+
+Create your feature branch (git checkout -b feature/AmazingFeature)
+
+Commit your changes (git commit -m 'Add some AmazingFeature')
+
+Push to the branch (git push origin feature/AmazingFeature)
+
+Open a Pull Request
+
 👨‍💻 Author
-Subham Bhattacharjee
 
 GitHub: @subhambxt03
 
+Project Link: https://github.com/subhambxt03/neura-AI
+
 🙏 Acknowledgments
-Groq for AI API
+Groq for providing the AI API
 
-Render for hosting
+Render for hosting the backend
 
-Netlify for hosting
+Netlify for hosting the frontend
 
-Aiven for MySQL
+Aiven for MySQL database hosting
+
+📝 License
+This project is licensed under the MIT License - see the LICENSE file for details.
+

@@ -10,7 +10,6 @@ from typing import Optional
 from database import get_db
 from models import User, UserSession
 
-# Use Argon2 instead of bcrypt (no 72-byte limit)
 pwd_context = CryptContext(
     schemes=["argon2"],
     deprecated="auto"

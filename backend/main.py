@@ -699,7 +699,6 @@ async def get_feedback_stats(
         "negative": sum(count for type, count in stats if type == "negative")
     }
 
-# ==================== ADDITIONAL UTILITY ENDPOINTS ====================
 
 @app.get("/metrics")
 async def get_metrics(current_user: User = Depends(get_current_user)):
