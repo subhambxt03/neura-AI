@@ -6,9 +6,9 @@ import Login from './pages/Login'
 import Signup from './pages/Signup'
 import Profile from './pages/Profile'
 import Settings from './pages/Settings'
+import ForgotPassword from './pages/ForgotPassword'
 import Sidebar from './components/Sidebar'
 import ChatArea from './components/ChatArea'
-import ForgotPassword from './pages/ForgotPassword'
 
 const AppContent = ({ sidebarOpen, setSidebarOpen, selectedConversation, setSelectedConversation, setIsAuthenticated }) => {
   const location = useLocation()
@@ -39,8 +39,8 @@ const AppContent = ({ sidebarOpen, setSidebarOpen, selectedConversation, setSele
             ) : (
               <div className="flex-1 flex items-center justify-center bg-dark-bg">
                 <div className="text-center">
-                  <div className="w-20 h-20 bg-accent rounded-full flex items-center justify-center mx-auto mb-4">
-                    <span className="text-3xl font-bold">NC</span>
+                  <div className="w-20 h-20 bg-gradient-to-r from-accent to-blue-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
+                    <span className="text-3xl font-bold text-white">NC</span>
                   </div>
                   <h2 className="text-2xl font-bold text-text-primary mb-2">NEURA CHAT</h2>
                   <p className="text-text-secondary">Tap the back button to return to chat</p>
@@ -105,6 +105,7 @@ function App() {
         <Routes>
           <Route path="/login" element={<Login setIsAuthenticated={handleSetAuthenticated} />} />
           <Route path="/signup" element={<Signup setIsAuthenticated={handleSetAuthenticated} />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="*" element={<Navigate to="/login" />} />
         </Routes>
       </Router>
