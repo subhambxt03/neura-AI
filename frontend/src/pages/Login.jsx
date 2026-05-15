@@ -67,10 +67,20 @@ const Login = ({ setIsAuthenticated }) => {
             </div>
           </div>
           
+          {/* Forgot Password Link */}
+          <div className="text-right">
+            <Link 
+              to="/forgot-password" 
+              className="text-sm text-accent hover:underline transition-colors"
+            >
+              Forgot Password?
+            </Link>
+          </div>
+          
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-accent text-white py-2 rounded-lg hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
+            className="w-full bg-gradient-to-r from-accent to-blue-600 text-white py-2 rounded-lg hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
           >
             {loading ? 'Logging in...' : (
               <>

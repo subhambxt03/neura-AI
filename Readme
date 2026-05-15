@@ -1,0 +1,136 @@
+# 💬 NEURA CHAT - AI-Powered Chat Application
+
+![NEURA CHAT Demo](frontend/src/assets/logo.png)
+
+A modern, AI-powered chat application with file upload support, conversation history, and user authentication.
+
+## ✨ Features
+
+- 🤖 **AI Chat** - Intelligent conversations using Groq AI (LLaMA 3.1)
+- 📱 **Responsive** - Works on desktop & mobile
+- 🔐 **Authentication** - Secure JWT-based auth
+- 💾 **Chat History** - Save and manage conversations
+- 📎 **File Upload** - Support for PDF, DOCX, TXT
+- 📝 **Markdown** - Formatted AI responses
+- 🔄 **Regenerate** - Reroll AI responses
+- ⭐ **Feedback** - Rate responses with thumbs up/down
+
+## 🛠️ Tech Stack
+
+**Frontend:** React, Vite, TailwindCSS, Axios
+**Backend:** Python, FastAPI, SQLAlchemy, MySQL, JWT
+**AI:** Groq API (LLaMA 3.1)
+
+## 🚀 Live Demo
+
+- **Frontend:** [https://neura-aii.netlify.app/](https://neura-aii.netlify.app/)
+- **Backend API:** [https://neura-ai-vvfv.onrender.com](https://neura-ai-vvfv.onrender.com)
+
+
+## 📸 Screenshots
+
+### Chat Interface
+![Chat Interface](https://your-image-url.com/chat-screenshot.png)
+
+### Mobile View
+![Mobile View](https://your-image-url.com/mobile-screenshot.png)
+
+### Login Page
+![Login Page](https://your-image-url.com/login-screenshot.png)
+
+## 🔧 Quick Start
+
+### Prerequisites
+- Node.js (v18+)
+- Python (v3.11+)
+- MySQL Database
+- Groq API Key
+
+### Backend Setup
+```bash
+cd backend
+python -m venv venv
+source venv/bin/activate  # Windows: venv\Scripts\activate
+pip install -r requirements.txt
+cp .env.example .env
+# Update .env with your credentials
+uvicorn main:app --reload --port 8000
+Frontend Setup
+bash
+cd frontend
+npm install
+cp .env.example .env
+# Update VITE_API_URL in .env
+npm run dev
+📡 Key API Endpoints
+Method	Endpoint	Description
+POST	/auth/signup	Register user
+POST	/auth/login	Login user
+GET	/chat/conversations	Get all chats
+POST	/chat/send	Send message (streaming)
+POST	/file/upload	Upload file
+🌐 Environment Variables
+Backend (.env)
+env
+DB_HOST=localhost
+DB_PORT=3306
+DB_USER=root
+DB_PASSWORD=yourpassword
+DB_NAME=neura_chat
+JWT_SECRET=your-secret-key
+GROQ_API_KEY=your-groq-key
+Frontend (.env)
+env
+VITE_API_URL=http://localhost:8000
+🚢 Deployment
+Backend (Render)
+Push code to GitHub
+
+Create Web Service on Render
+
+Add environment variables
+
+Deploy
+
+Frontend (Netlify)
+Push code to GitHub
+
+Create site on Netlify
+
+Build command: npm run build
+
+Publish directory: dist
+
+Add env: VITE_API_URL=https://your-backend.com
+
+📁 Project Structure
+text
+neura-AI/
+├── backend/
+│   ├── main.py
+│   ├── database.py
+│   ├── models.py
+│   ├── auth.py
+│   ├── ai_service.py
+│   └── requirements.txt
+├── frontend/
+│   ├── src/
+│   │   ├── components/
+│   │   ├── pages/
+│   │   ├── services/
+│   │   └── App.jsx
+│   └── package.json
+└── README.md
+👨‍💻 Author
+Subham Bhattacharjee
+
+GitHub: @subhambxt03
+
+🙏 Acknowledgments
+Groq for AI API
+
+Render for hosting
+
+Netlify for hosting
+
+Aiven for MySQL

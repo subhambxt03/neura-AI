@@ -46,3 +46,15 @@ class Feedback(Base):
     message_id = Column(Integer, ForeignKey("messages.id", ondelete="CASCADE"), nullable=False)
     feedback_type = Column(String(10), nullable=False)
     created_at = Column(TIMESTAMP, server_default=func.now())
+
+    # Add this to your models.py
+
+class PasswordReset(Base):
+    __tablename__ = "password_resets"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    email = Column(String(255), nullable=False, index=True)
+    otp = Column(String(6), nullable=False)
+    expires_at = Column(DateTime, nullable=False)
+    is_verified = Column(Boolean, default=False)
+    created_at = Column(DateTime, default=datetime.utcnow)

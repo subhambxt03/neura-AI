@@ -8,7 +8,7 @@ import Profile from './pages/Profile'
 import Settings from './pages/Settings'
 import Sidebar from './components/Sidebar'
 import ChatArea from './components/ChatArea'
-
+import ForgotPassword from './pages/ForgotPassword'
 
 const AppContent = ({ sidebarOpen, setSidebarOpen, selectedConversation, setSelectedConversation, setIsAuthenticated }) => {
   const location = useLocation()
@@ -50,6 +50,7 @@ const AppContent = ({ sidebarOpen, setSidebarOpen, selectedConversation, setSele
           } />
           <Route path="/profile" element={<Profile />} />
           <Route path="/settings" element={<Settings setIsAuthenticated={setIsAuthenticated} />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </div>

@@ -6,6 +6,8 @@ from sqlalchemy import select, delete, update, func
 from typing import List, Optional
 import json
 import os
+import random
+import string
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
 from contextlib import asynccontextmanager
@@ -13,11 +15,12 @@ from contextlib import asynccontextmanager
 load_dotenv()
 
 from database import get_db, init_db, close_db
-from models import User, Conversation, Message, UserSession, Feedback
+from models import User, Conversation, Message, UserSession, Feedback, PasswordReset
 from schemas import (
     UserCreate, UserLogin, UserResponse, TokenResponse,
     ConversationResponse, MessageResponse, MessageCreate,
-    ChangePasswordRequest, FeedbackRequest, ConversationCreate
+    ChangePasswordRequest, FeedbackRequest, ConversationCreate,
+    ForgotPasswordRequest, VerifyOTPRequest, ResetPasswordRequest
 )
 from auth import (
     get_password_hash, verify_password, create_access_token,
@@ -73,6 +76,17 @@ async def preflight_handler():
 
 # Initialize AI Service
 ai_service = AIService()
+
+# Helper function to generate OTP
+def generate_otp():
+    return ''.join(random.choices(string.digits, k=6))
+
+# Helper function to send email (placeholder - implement with actual email service)
+async def send_otp_email(email: str, otp: str):
+    # TODO: Implement actual email sending (SendGrid, AWS SES, etc.)
+    print(f"Sending OTP {otp} to {email}")
+    # For now, just log it
+    return True
 
 # ==================== TEST ENDPOINTS ====================
 
@@ -180,6 +194,105 @@ async def logout(
 async def validate_token(current_user: User = Depends(get_current_user)):
     """Validate if token is still valid"""
     return {"valid": True, "user_id": current_user.id, "email": current_user.email}
+
+# ==================== FORGOT PASSWORD ENDPOINTS ====================
+
+@app.post("/auth/forgot-password")
+async def forgot_password(request: ForgotPasswordRequest, db: AsyncSession = Depends(get_db)):
+    """Send OTP to user's email for password reset"""
+    # Check if user exists
+    result = await db.execute(
+        select(User).where(User.email == request.email)
+    )
+    user = result.scalar_one_or_none()
+    
+    if not user:
+        # For security, don't reveal if email exists
+        return {"message": "If your email is registered, you will receive an OTP"}
+    
+    # Generate OTP
+    otp = generate_otp()
+    
+    # Delete any existing OTP for this user
+    await db.execute(
+        delete(PasswordReset).where(PasswordReset.email == request.email)
+    )
+    
+    # Store OTP in database
+    reset_record = PasswordReset(
+        email=request.email,
+        otp=otp,
+        expires_at=datetime.now() + timedelta(minutes=10)
+    )
+    db.add(reset_record)
+    await db.commit()
+    
+    # Send OTP via email
+    await send_otp_email(request.email, otp)
+    
+    return {"message": "OTP sent to your email"}
+
+@app.post("/auth/verify-otp")
+async def verify_otp(request: VerifyOTPRequest, db: AsyncSession = Depends(get_db)):
+    """Verify OTP"""
+    # Find valid OTP
+    result = await db.execute(
+        select(PasswordReset).where(
+            PasswordReset.email == request.email,
+            PasswordReset.otp == request.otp,
+            PasswordReset.expires_at > datetime.now()
+        )
+    )
+    reset_record = result.scalar_one_or_none()
+    
+    if not reset_record:
+        raise HTTPException(status_code=400, detail="Invalid or expired OTP")
+    
+    # Mark as verified (optional)
+    reset_record.is_verified = True
+    await db.commit()
+    
+    return {"message": "OTP verified successfully"}
+
+@app.post("/auth/reset-password")
+async def reset_password(request: ResetPasswordRequest, db: AsyncSession = Depends(get_db)):
+    """Reset password using verified OTP"""
+    # Find verified OTP
+    result = await db.execute(
+        select(PasswordReset).where(
+            PasswordReset.email == request.email,
+            PasswordReset.otp == request.otp,
+            PasswordReset.expires_at > datetime.now(),
+            PasswordReset.is_verified == True
+        )
+    )
+    reset_record = result.scalar_one_or_none()
+    
+    if not reset_record:
+        raise HTTPException(status_code=400, detail="Invalid or expired OTP")
+    
+    # Update user's password
+    result = await db.execute(
+        select(User).where(User.email == request.email)
+    )
+    user = result.scalar_one_or_none()
+    
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    user.password = get_password_hash(request.new_password)
+    
+    # Delete used reset record
+    await db.delete(reset_record)
+    
+    # Delete all sessions for this user (force re-login)
+    await db.execute(
+        delete(UserSession).where(UserSession.user_id == user.id)
+    )
+    
+    await db.commit()
+    
+    return {"message": "Password reset successfully"}
 
 # ==================== USER ENDPOINTS ====================
 
