@@ -177,11 +177,13 @@ neura-AI/
     ├── vite.config.js
     ├── tailwind.config.js
     └── index.html
+
 📱 Responsive Design
 Device	Breakpoint	Layout Behavior
 Desktop	> 1024px	Full sidebar, side-by-side elements, expanded chat area
 Tablet	768px - 1024px	Collapsible sidebar, responsive chat layout
 Mobile	< 768px	Hamburger menu, full-width chat, bottom input
+
 🔒 Security Features
 JWT token-based authentication with 7-day expiration
 
@@ -209,6 +211,7 @@ Response Regeneration	Get alternative responses with one click
 Feedback System	Help improve AI responses with ratings
 Modern UI	Beautiful dark-mode optimized interface
 Production Ready	Scalable architecture with error handling
+
 📈 Use Cases
 User Type	Application
 General Users	Daily assistant for questions, research, and learning
@@ -217,9 +220,9 @@ Professionals	Draft emails, generate content, brainstorm ideas
 Developers	Code assistance, debugging help, technical explanations
 Writers	Content generation, editing help, creative writing
 Customer Support	Automated responses, FAQ handling, ticket resolution
+
 🔧 Quick Start
 Prerequisites
-Node.js (v18+)
 
 Python (v3.11+)
 
@@ -264,6 +267,7 @@ cp .env.example .env
 
 # Run the development server
 npm run dev
+
 📡 Key API Endpoints
 Authentication
 Method	Endpoint	Description
@@ -288,6 +292,8 @@ Method	Endpoint	Description
 POST	/file/upload	Upload and process file
 POST	/feedback	Submit feedback for AI response
 GET	/feedback/stats	Get feedback statistics
+
+
 🌐 Environment Variables
 Backend (.env)
 env
@@ -317,6 +323,7 @@ SMTP_PASSWORD=your-app-password
 Frontend (.env)
 env
 VITE_API_URL=http://localhost:8000
+
 🚢 Deployment
 Backend (Render)
 Push your code to GitHub
@@ -374,6 +381,7 @@ toml
   from = "/*"
   to = "/index.html"
   status = 200
+
 📧 Contact
 Project Link: https://github.com/subhambxt03/neura-AI
 
